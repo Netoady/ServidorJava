@@ -1,26 +1,27 @@
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Scanner;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 public class Servidor {
+
+    private static final BlockingQueue<String> FILA_REQUISICOES = new ArrayBlockingQueue<>(100);
+
     public static void main(String[] args) throws IOException{
+
         ServerSocket servidor = new ServerSocket(12345);
         System.out.println("comecou. aguardando...");
-        Socket conexao1 = servidor.accept();
-        System.out.println(conexao1.getInetAddress().getHostAddress());
-        Scanner LE_DO_SOCKET = new Scanner(conexao1.getInputStream());
-        PrintStream ESCREVE_NO_SOCKET = new PrintStream(conexao1.getOutputStream());
-        while(LE_DO_SOCKET.hasNextLine()){
-            ///ler do socket
-            String temp = LE_DO_SOCKET.nextLine();
-            System.out.println(temp);
-            //escrever no socket
-            ESCREVE_NO_SOCKET.println("Resposta da mensagem: "+temp+" = BLZ!!");
+
+
+        while(true){
+            Socket conexao = servidor.accept();
+            System.out.println ("Novo cliente conectado" + conexao.getInetAddress().getHostAddress());
+
+            //Cria e dispara uma nova thread independente para atender o cliente recem-chegado
+            TratadorCliente tratador = new TratadorCliente (conexao, FILA_REQUISICOES);
+            Thread threadCliente = new Thread(tratador);
+            threadCliente.start();
         }
-        LE_DO_SOCKET.close();
-        servidor.close();
-        conexao1.close();
     }
 }

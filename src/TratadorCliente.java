@@ -6,48 +6,61 @@ import java.util.concurrent.BlockingQueue;
 
 public class TratadorCliente implements Runnable {
     private final Socket conexao;
-    private final BlockingQueue<String> filaRequisicoes;
+    private final ProcessadorProtocolo processador;
 
-    public TratadorCliente (Socket conexao, BlockingQueue<String> filaRequisicoes) {
+    public TratadorCliente(Socket conexao, BlockingQueue<String> filaRequisicoes) {
         this.conexao = conexao;
-        this.filaRequisicoes = filaRequisicoes;
+        this.processador = new ProcessadorProtocolo(filaRequisicoes);
     }
 
-    @Override 
+    @Override
     public void run() {
-        try {
-            Scanner LE_DO_SOCKET = new Scanner(conexao.getInputStream());
-            PrintStream ESCREVE_NO_SOCKET = new PrintStream(conexao.getOutputStream());
+        String ipCliente = conexao.getInetAddress().getHostAddress();
+        System.out.println("Iniciando atendimento para: " + ipCliente);
 
-            ESCREVE_NO_SOCKET.println("BEM-VINDO!");
+        try (
+            Scanner leDoSocket = new Scanner(conexao.getInputStream());
+            PrintStream escreveNoSocket = new PrintStream(conexao.getOutputStream())
+        ) {
+            while (leDoSocket.hasNextLine()) {
+                String mensagem = leDoSocket.nextLine();
 
-            //loop de leitura exclusivo deste cliente
-            while(LE_DO_SOCKET.hasNextLine()) {
-                String mensagem = LE_DO_SOCKET.nextLine();
-
-                //comando para encerrar a conexao limpa
-                if ("SAIR".equalsIgnoreCase(mensagem.trim())) {
-                    ESCREVE_NO_SOCKET.println("CONEXAO ENCERRADA!");
+                // Trata encerramento do cliente (Opção "0" do menu ou palavra "SAIR")
+                if ("0".equals(mensagem.trim()) || "SAIR".equalsIgnoreCase(mensagem.trim())) {
+                    System.out.println("Cliente " + ipCliente + " solicitou desconexao.");
                     break;
                 }
 
-                // Adiciona a mensaem recebida na fila compartilhada
-                filaRequisicoes.put(mensagem);
-                System.out.println("[" + conexao.getInetAddress().getHostAddress() + "na fila]: " + mensagem);
+                // Trata o protocolo da Imagem Base64 (Opção 4)
+                if ("4".equals(mensagem.trim())) {
+                    System.out.println("Cliente " + ipCliente + " enviando imagem Base64...");
+                    if (leDoSocket.hasNextLine()) {
+                        String base64Recebido = leDoSocket.nextLine();
+                        System.out.println("Imagem Base64 recebida (" + base64Recebido.length() + " caracteres). Devolvendo ao cliente...");
+                        
+                        // Responde devolvendo a própria imagem em Base64 (esperado pelo cliente)
+                        escreveNoSocket.println(base64Recebido);
+                    }
+                    continue;
+                }
 
-                //Responde ao cliente
-                ESCREVE_NO_SOCKET.println("Resposta da mensagem" + mensagem + " = BLZ!!");
+                // Processa operações matematicas e mensagens
+                String resposta = processador.processarMensagem(mensagem);
+                System.out.println("[" + ipCliente + "]: " + mensagem + " -> Resposta: " + resposta);
+                
+                // Envia a resposta de volta ao Socket do cliente
+                escreveNoSocket.println(resposta);
             }
 
-            LE_DO_SOCKET.close();
-            ESCREVE_NO_SOCKET.close();
-            conexao.close();
-            System.out.println("Cliente desconectado: " + conexao.getInetAddress().getHostAddress());
-
-        } catch (IOException | InterruptedException e) {
-            System.out.println("Erro no atendimento ao cliente" + e.getMessage());
+        } catch (IOException e) {
+            System.err.println("Erro de E/S no cliente " + ipCliente + ": " + e.getMessage());
+        } finally {
+            try {
+                conexao.close();
+                System.out.println("Conexao encerrada com o cliente: " + ipCliente);
+            } catch (IOException e) {
+                System.err.println("Erro ao fechar conexao: " + e.getMessage());
+            }
         }
-
     }
-    
 }

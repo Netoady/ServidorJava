@@ -9,10 +9,10 @@ public class ProcessadorProtocolo {
 
     public String processarMensagem(String mensagem) {
         if (mensagem == null || mensagem.trim().isEmpty()) {
-            return "Erro: Mensagem Vazia";
+            return "ERRO;Mensagem Vazia";
         }
 
-        // Tenta registrar na BlockingQueue para auditoria/fila do servidor
+        // Tenta registrar na fila do servidor
         try {
             filaRequisicoes.put(mensagem);
         } catch (InterruptedException e) {
@@ -23,15 +23,12 @@ public class ProcessadorProtocolo {
         String comando = partes[0].trim();
 
         switch (comando) {
-            case "1": // Somar (1;n1;n2)
-                return calcular(partes, "+");
-            case "2": // Subtrair (2;n1;n2)
-                return calcular(partes, "-");
-            case "3": // Multiplicar (3;n1;n2)
-                return calcular(partes, "*");
-            case "5": // Mensagem (5;conteudo)
-                return partes.length > 1 ? "MENSAGEM_RECEBIDA: " + partes[1] : "MENSAGEM_VAZIA";
-            default:
+            case "1": return calcular(partes, "+");
+            case "2": return calcular(partes, "-");
+            case "3": return calcular(partes, "*");
+            case "5": 
+                return partes.length > 1 ? "Servidor recebeu: " + partes[1] : "Mensagem vazia";
+            default: 
                 return "COMANDO_DESCONHECIDO";
         }
     }
@@ -39,8 +36,8 @@ public class ProcessadorProtocolo {
     private String calcular(String[] partes, String operacao) {
         if (partes.length < 3) return "ERRO;Parametros insuficientes";
         try {
-            double n1 = Double.parseDouble(partes[1]);
-            double n2 = Double.parseDouble(partes[2]);
+            double n1 = Double.parseDouble(partes[1].trim());
+            double n2 = Double.parseDouble(partes[2].trim());
             double resultado = 0;
 
             switch (operacao) {
@@ -50,7 +47,7 @@ public class ProcessadorProtocolo {
             }
             return String.valueOf(resultado);
         } catch (NumberFormatException e) {
-            return "ERRO;Numero invalido";
+            return "ERRO;Formato numerico invalido";
         }
     }
 }

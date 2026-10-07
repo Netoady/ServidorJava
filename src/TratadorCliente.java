@@ -8,10 +8,12 @@ import java.util.concurrent.BlockingQueue;
 public class TratadorCliente implements Runnable {
     private final Socket conexao;
     private final ProcessadorProtocolo processador;
+    private final BlockingQueue<Socket> filaConexoes;
 
-    public TratadorCliente(Socket conexao, BlockingQueue<String> filaRequisicoes) {
+    public TratadorCliente(Socket conexao, BlockingQueue<String> filaRequisicoes, BlockingQueue<Socket> filaConexoes) {
         this.conexao = conexao;
         this.processador = new ProcessadorProtocolo(filaRequisicoes);
+        this.filaConexoes = filaConexoes;
     }
 
     @Override
@@ -20,13 +22,13 @@ public class TratadorCliente implements Runnable {
         System.out.println("Iniciando atendimento para: " + ipCliente);
 
         try (
-            Scanner leDoSocket = new Scanner(conexao.getInputStream());
-            PrintStream escreveNoSocket = new PrintStream(conexao.getOutputStream())
+            Scanner leDoSocket = new Scanner(conexao.getInputStream()); // ** Lê os bytes vindo da rede
+            PrintStream escreveNoSocket = new PrintStream(conexao.getOutputStream()) // ** Envia as respostas
         ) {
             while (leDoSocket.hasNextLine()) {
                 String mensagem = leDoSocket.nextLine();
 
-                // Trata encerramento do cliente (Opção "0" do menu ou palavra "SAIR")
+                // Trata encerramento do cliente
                 if ("0".equals(mensagem.trim()) || "SAIR".equalsIgnoreCase(mensagem.trim())) {
                     System.out.println("Cliente " + ipCliente + " solicitou desconexao.");
                     break;
@@ -55,6 +57,7 @@ public class TratadorCliente implements Runnable {
             System.err.println("Erro de E/S no cliente " + ipCliente + ": " + e.getMessage());
         } finally {
             try {
+                filaConexoes.remove(conexao); // Libera a vaga para um novo cliente se conectar!
                 conexao.close();
                 System.out.println("Conexao encerrada com o cliente: " + ipCliente);
             } catch (IOException e) {

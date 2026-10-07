@@ -4,6 +4,7 @@ import java.net.Socket;
 import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
 
+
 public class TratadorCliente implements Runnable {
     private final Socket conexao;
     private final ProcessadorProtocolo processador;
@@ -33,14 +34,12 @@ public class TratadorCliente implements Runnable {
 
                 // Trata o protocolo da Imagem Base64 (Opção 4)
                 if ("4".equals(mensagem.trim())) {
-                    System.out.println("Cliente " + ipCliente + " enviando imagem Base64...");
-                    if (leDoSocket.hasNextLine()) {
-                        String base64Recebido = leDoSocket.nextLine();
-                        System.out.println("Imagem Base64 recebida (" + base64Recebido.length() + " caracteres). Devolvendo ao cliente...");
-                        
-                        // Responde devolvendo a própria imagem em Base64 (esperado pelo cliente)
-                        escreveNoSocket.println(base64Recebido);
-                    }
+                    System.out.println("Cliente " + ipCliente + " solicitou a imagem Base64...");
+                    ServicoImagem servicoImagem = new ServicoImagem();
+                    String base64Imagem = servicoImagem.obterImagemBase64();
+                    // Envia a imagem em Base64 para o cliente
+                    escreveNoSocket.println(base64Imagem);
+                    System.out.println("Imagem morpheus.jpg enviada com sucesso para " + ipCliente);
                     continue;
                 }
 

@@ -6,17 +6,17 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 public class Servidor {
-    private static final int PORTA = 12345; // ** Porta TCP definida
-    private static final int MAX_ACESSOS = 3;
+    private static final int PORTA = 12345; // Porta TCP definida
+    private static final int MAX_ACESSOS = 3; 
 
-    private static final BlockingQueue<String> FILA_REQUISICOES = new ArrayBlockingQueue<>(100); // ** 
-    private static final BlockingQueue<Socket> FILA_CONEXOES = new ArrayBlockingQueue<>(MAX_ACESSOS);
+    private static final BlockingQueue<String> FILA_REQUISICOES = new ArrayBlockingQueue<>(100); // Armazena e audita as mensagens de texto
+    private static final BlockingQueue<Socket> FILA_CONEXOES = new ArrayBlockingQueue<>(MAX_ACESSOS); //Semáforo de capacidade do servidor
 
     public static void main(String[] args) {
         System.out.println("=== Servidor Multithread Java Iniciado ===");
         System.out.println("=== Limite de clientes: " + MAX_ACESSOS + "===");
 
-        try (ServerSocket servidor = new ServerSocket(PORTA)) { // **
+        try (ServerSocket servidor = new ServerSocket(PORTA)) { // Inicio o servidor
             System.out.println("Aguardando conexoes na porta " + PORTA + "...");
 
             while (true) {

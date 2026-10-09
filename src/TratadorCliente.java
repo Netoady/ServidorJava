@@ -11,7 +11,7 @@ public class TratadorCliente implements Runnable {
     private final BlockingQueue<Socket> filaConexoes;
 
     public TratadorCliente(Socket conexao, BlockingQueue<String> filaRequisicoes, BlockingQueue<Socket> filaConexoes) {
-        this.conexao = conexao;
+        this.conexao = conexao; // Socket TCP do cliente
         this.processador = new ProcessadorProtocolo(filaRequisicoes);
         this.filaConexoes = filaConexoes;
     }
@@ -34,8 +34,8 @@ public class TratadorCliente implements Runnable {
                     break;
                 }
 
-                // Trata o protocolo da Imagem Base64 (Opção 4)
-                if ("4".equals(mensagem.trim())) {
+                // Trata o protocolo da Imagem Base64 (Opção 5)
+                if ("5".equals(mensagem.trim())) {
                     System.out.println("Cliente " + ipCliente + " solicitou a imagem Base64...");
                     ServicoImagem servicoImagem = new ServicoImagem();
                     String base64Imagem = servicoImagem.obterImagemBase64();

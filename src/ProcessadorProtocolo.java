@@ -26,7 +26,8 @@ public class ProcessadorProtocolo {
             case "1": return calcular(partes, "+");
             case "2": return calcular(partes, "-");
             case "3": return calcular(partes, "*");
-            case "5": 
+            case "4": return calcular(partes, "/");
+            case "6": 
                 return partes.length > 1 ? "Servidor recebeu: " + partes[1] : "Mensagem vazia";
             default: 
                 return "COMANDO_DESCONHECIDO";
@@ -44,6 +45,7 @@ public class ProcessadorProtocolo {
                 case "+": resultado = n1 + n2; break;
                 case "-": resultado = n1 - n2; break;
                 case "*": resultado = n1 * n2; break;
+                case "/": resultado = n1 / n2; break;
             }
             return String.valueOf(resultado);
         } catch (NumberFormatException e) {

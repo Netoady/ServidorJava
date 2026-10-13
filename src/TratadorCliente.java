@@ -45,6 +45,15 @@ public class TratadorCliente implements Runnable {
                     continue;
                 }
 
+                // Aqui eu trato a requisição do objeto Aluno
+                if ("7".equals(mensagem.trim())) {
+                    System.out.println ("Cliente" + ipCliente + " solicitou os dados do Aluno (Opcao 7)...");
+                    String respostaAluno = processador.processarMensagem(mensagem);
+                    escreveNoSocket.println(respostaAluno);
+                    System.out.println ("Dados do aluno enviados com sucesso para " + ipCliente);
+                    continue;
+                }
+
                 // Processa operações matematicas e mensagens
                 String resposta = processador.processarMensagem(mensagem);
                 System.out.println("[" + ipCliente + "]: " + mensagem + " -> Resposta: " + resposta);

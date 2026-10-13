@@ -29,6 +29,13 @@ public class ProcessadorProtocolo {
             case "4": return calcular(partes, "/");
             case "6": 
                 return partes.length > 1 ? "Servidor recebeu: " + partes[1] : "Mensagem vazia";
+            case "7":
+                //Aqui eu serializo os dados do Aluno em formato de texto único separado por ponto e vírgula
+                String nome = "Francisco Neto";
+                String matricula = "202602";
+                String curso = "Sistemas pra Internet";
+                return nome + ";" + matricula + ";" + curso;
+
             default: 
                 return "COMANDO_DESCONHECIDO";
         }
